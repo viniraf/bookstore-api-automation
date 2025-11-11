@@ -205,3 +205,24 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# ==========================================
+# Custom ignores for QA automation project
+# ==========================================
+
+# Allure reports (generated test reports)
+src/reports/allure-results/
+src/reports/allure-report/
+
+# Test logs and execution artifacts
+src/reports/logs/
+*.log
+
+# Temporary test/cache data
+.cache/
+tmp/
+temp/
+
+# Editor-specific settings (optional, safe to ignore)
+.vscode/
+.idea/

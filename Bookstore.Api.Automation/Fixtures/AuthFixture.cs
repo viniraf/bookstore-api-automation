@@ -22,7 +22,7 @@ namespace Bookstore.Api.Automation.Fixtures
 
             DotEnv.Load();
 
-            _baseUrlAccount = Environment.GetEnvironmentVariable("BASE_URL_ACCOUNT") 
+            _baseUrlAccount = Environment.GetEnvironmentVariable("BASE_URL_ACCOUNT")
                 ?? throw new InvalidOperationException("BASE_URL_ACCOUNT is not set in environment variables.");
 
             _username = Environment.GetEnvironmentVariable("BOOKSTORE_USERNAME")

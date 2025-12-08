@@ -33,6 +33,16 @@ namespace Bookstore.Api.Automation.Clients
             return response.Data;
         }
 
+        public async Task<RestResponse> GetBookByIsbnAsync(string isbn)
+        { 
+            RestRequest request = new RestRequest($"/Book", Method.Get);
+            request.AddQueryParameter("ISBN", isbn);
+
+            RestResponse response = await _client.ExecuteAsync(request);
+
+            return response;
+        }
+
     }
 
 }

@@ -81,7 +81,7 @@ namespace Bookstore.Api.Automation.Tests.Bookshelf
             Console.WriteLine("---------------------------------------------------\n");
         }
 
-        [Fact(DisplayName = "POST /Bookshelf - Should return error when adding duplicated ISBN")]
+        [Fact(DisplayName = "POST /Book - Should return error when adding duplicated ISBN")]
         public async Task ShouldReturnErrorWhenAddingDuplicatedIsbn()
         {
             Console.WriteLine("\n---------------------------------------------------");
@@ -127,7 +127,7 @@ namespace Bookstore.Api.Automation.Tests.Bookshelf
             Console.WriteLine("---------------------------------------------------\n");
         }
 
-        [Fact(DisplayName = "POST /Bookshelf - Should return error when ISBN is invalid")]
+        [Fact(DisplayName = "POST /Book - Should return error when ISBN is invalid")]
         public async Task ShouldReturnErrorWhenIsbnInvalid()
         {
             Console.WriteLine("\n---------------------------------------------------");
@@ -165,6 +165,52 @@ namespace Bookstore.Api.Automation.Tests.Bookshelf
             Assert.Contains("ISBN supplied is not available", errorData.Message, StringComparison.OrdinalIgnoreCase);
 
             Console.WriteLine("[INFO] Invalid ISBN test finished");
+            Console.WriteLine("---------------------------------------------------\n");
+        }
+
+        [Fact(DisplayName = "POST /Book - Should add multiple books successfully")]
+        public async Task ShouldAddMultipleBooksSuccessfully()
+        {
+            Console.WriteLine("---------------------------------------------------");
+            Console.WriteLine("[STEP] Preparing request body with multiple ISBNs");
+
+            // Arrange
+            string isbn1 = "9781449325862";
+            string isbn2 = "9781449331818";
+
+            var requestBody = new AddBookRequestBuilder()
+                .WithUserId(_userId)
+                .WithIsbns(isbn1, isbn2)
+                .Build();
+
+            Console.WriteLine("[STEP] Calling POST /Book endpoint to add multiple books");
+            var response = await _bookshelfClient.AddBookAsync(requestBody);
+
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+            Console.WriteLine($"\n[ASSERT] Expected Status: {HttpStatusCode.Created}");
+            Console.WriteLine($"[ASSERT] Actual Status: {response.StatusCode}");
+
+            Console.WriteLine("[STEP] Deserializing response body");
+            var responseData = JsonSerializer.Deserialize<AddBookResponse>(
+                response.Content!,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            Console.WriteLine("[ASSERT] Validating response content");
+            Assert.NotNull(responseData);
+            Assert.NotNull(responseData.Books);
+            Assert.NotEmpty(responseData.Books);
+
+            var books = responseData.Books;
+            Assert.True(books.Count == 2, $"Expected 2 books in response instead of {books.Count}");
+
+            var isbnsReturned = books.Select(b => b.Isbn).ToList();
+            Assert.Contains(isbn1, isbnsReturned);
+            Assert.Contains(isbn2, isbnsReturned);
+
+            Console.WriteLine($"[ASSERT] Expected ISBNs: {isbn1}, {isbn2}");
+            Console.WriteLine($"[ASSERT] Actual ISBNs returned: {string.Join(", ", isbnsReturned)}");
+
+            Console.WriteLine("[INFO] add multiple books test finished");
             Console.WriteLine("---------------------------------------------------\n");
         }
     }

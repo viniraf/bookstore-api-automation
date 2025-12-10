@@ -26,6 +26,14 @@ namespace Bookstore.Api.Automation.Tests.Builders
             return this;
         }
 
+        public AddBookRequestBuilder WithIsbns(params string[] isbns)
+        {
+            _request.CollectionOfIsbns = isbns
+                .Select(i => new IsbnEntry { Isbn = i })
+                .ToList();
+            return this;
+        }
+
         public AddBookRequest Build()
         {
             return _request;

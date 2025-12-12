@@ -20,17 +20,13 @@ namespace Bookstore.Api.Automation.Clients
             _client = RestClientFactory.Create(baseUrl, token);
         }
 
-        public async Task<BookListResponse?> GetAllBooksAsync()
+        public async Task<RestResponse<BookListResponse>> GetAllBooksAsync()
         {
             RestRequest request = new RestRequest("/Books", Method.Get);
 
             RestResponse<BookListResponse> response = await _client.ExecuteAsync<BookListResponse>(request);
 
-            if (!response.IsSuccessful)
-                throw new InvalidOperationException(
-                    $"Failed to fetch books. Status: {response.StatusCode}, Message: {response.ErrorMessage}");
-
-            return response.Data;
+            return response;
         }
 
         public async Task<RestResponse> GetBookByIsbnAsync(string isbn)

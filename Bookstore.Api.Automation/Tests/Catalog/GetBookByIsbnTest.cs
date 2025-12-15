@@ -21,8 +21,8 @@ namespace Bookstore.Api.Automation.Tests.Catalog
             _catalogClient = new CatalogClient(baseUrl, _authFixture.Token);
         }
 
-        [Fact(DisplayName = "GET /Book?ISBN=valid - Should return book successfully")]
-        public async Task GetBookByIsbn_ValidIsbn_ShouldReturnBookSuccessfully()
+        [Fact(DisplayName = "GET /Book?ISBN=valid - When ISBN is valid, should return book")]
+        public async Task GetBookByIsbn_WhenIsbnIsValid_ShouldReturnBook()
         {
             Console.WriteLine("\n\n[STEP] Calling GET /Books?ISBN=9781449325862 endpoint");
             string isbn = "9781449325862";
@@ -42,8 +42,8 @@ namespace Bookstore.Api.Automation.Tests.Catalog
             Assert.Equal(isbn, book.Isbn);
         }
 
-        [Fact(DisplayName = "GET /Book?ISBN=invalid - Should return not found")]
-        public async Task GetBookByIsbn_InvalidIsbn_ShouldReturnNotFound()
+        [Fact(DisplayName = "GET /Book?ISBN=invalid - When ISBN is invalid, should return bad request")]
+        public async Task GetBookByIsbn_WhenIsbnIsInvalid_ShouldReturnBadRequest()
         {
             Console.WriteLine("\n\n[STEP] Calling GET /Books?ISBN=invalid endpoint");
             string invalidIsbn = "invalid";

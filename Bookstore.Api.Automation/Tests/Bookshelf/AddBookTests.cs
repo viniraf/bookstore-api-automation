@@ -36,8 +36,8 @@ namespace Bookstore.Api.Automation.Tests.Bookshelf
 
         public Task DisposeAsync() => Task.CompletedTask;
 
-        [Fact(DisplayName = "POST /book - Should add book successfully")]
-        public async Task ShouldAddBookSuccessfully()
+        [Fact(DisplayName = "POST /Book - When book is valid, should add book successfully")]
+        public async Task AddBook_WhenBookIsValid_ShouldAddBookSuccessfully()
         {
             Console.WriteLine("\n---------------------------------------------------");
             // Arrange
@@ -81,8 +81,8 @@ namespace Bookstore.Api.Automation.Tests.Bookshelf
             Console.WriteLine("---------------------------------------------------\n");
         }
 
-        [Fact(DisplayName = "POST /Book - Should return error when adding duplicated ISBN")]
-        public async Task ShouldReturnErrorWhenAddingDuplicatedIsbn()
+        [Fact(DisplayName = "POST /Book - When ISBN already exists, should return error")]
+        public async Task AddBook_WhenIsbnAlreadyExists_ShouldReturnError()
         {
             Console.WriteLine("\n---------------------------------------------------");
 
@@ -127,8 +127,8 @@ namespace Bookstore.Api.Automation.Tests.Bookshelf
             Console.WriteLine("---------------------------------------------------\n");
         }
 
-        [Fact(DisplayName = "POST /Book - Should return error when ISBN is invalid")]
-        public async Task ShouldReturnErrorWhenIsbnInvalid()
+        [Fact(DisplayName = "POST /Book - When ISBN is invalid, should return error")]
+        public async Task AddBook_WhenIsbnIsInvalid_ShouldReturnError()
         {
             Console.WriteLine("\n---------------------------------------------------");
 
@@ -168,8 +168,8 @@ namespace Bookstore.Api.Automation.Tests.Bookshelf
             Console.WriteLine("---------------------------------------------------\n");
         }
 
-        [Fact(DisplayName = "POST /Book - Should add multiple books successfully")]
-        public async Task ShouldAddMultipleBooksSuccessfully()
+        [Fact(DisplayName = "POST /Book - When multiple books are provided, should add all successfully")]
+        public async Task AddBook_WhenMultipleBooksProvided_ShouldAddAllSuccessfully()
         {
             Console.WriteLine("---------------------------------------------------");
             Console.WriteLine("[STEP] Preparing request body with multiple ISBNs");

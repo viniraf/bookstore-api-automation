@@ -28,8 +28,8 @@ namespace Bookstore.Api.Automation.Tests.Catalog
             _catalogClient = new CatalogClient(baseUrl, _authFixture.Token);
         }
 
-        [Fact(DisplayName = "GET /Books - Should return list of all books successfully")]
-        public async Task Should_Return_All_Books_Successfully()
+        [Fact(DisplayName = "GET /Books - When books exist, should return book list")]
+        public async Task GetAllBooks_WhenBooksExist_ShouldReturnBookList()
         {
             Console.WriteLine("\n[STEP] Calling GET /Books endpoint");
 
@@ -53,8 +53,8 @@ namespace Bookstore.Api.Automation.Tests.Catalog
             Console.WriteLine($"\n[ASSERT] Actual: Book list returned {response?.Data.Books.Count} books");
         }
 
-        [Fact(DisplayName = "Should validate catalog structure")]
-        public async Task ShouldValidateCatalogStructure()
+        [Fact(DisplayName = "GET /Books - When called, should return valid catalog structure")]
+        public async Task GetAllBooks_WhenCalled_ShouldReturnValidCatalogStructure()
         {
             Console.WriteLine("\n---------------------------------------------------");
             Console.WriteLine("[STEP] Calling GET /Books");

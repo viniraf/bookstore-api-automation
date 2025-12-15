@@ -30,7 +30,7 @@ namespace Bookstore.Api.Automation.Tests.Bookshelf
 
         public async Task InitializeAsync()
         {
-            await _bookshelfClient.ClearUserBooksAsync(_userId);
+            await _bookshelfClient.DeleteUserBooksAsync(_userId);
             Console.WriteLine("\n[SETUP] Clearing user's bookshelf before test execution");
         }
 

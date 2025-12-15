@@ -13,7 +13,7 @@ namespace Bookstore.Api.Automation.Clients
             _client = RestClientFactory.Create(baseUrl, token);
         }
 
-        public async Task<RestResponse> ClearUserBooksAsync(string userId)
+        public async Task<RestResponse> DeleteUserBooksAsync(string userId)
         {
             var request = new RestRequest("/Books", Method.Delete);
             request.AddQueryParameter("UserId", userId);

@@ -1,9 +1,8 @@
 ﻿using Bookstore.Api.Automation.Clients;
 using Bookstore.Api.Automation.Fixtures;
 using Bookstore.Api.Automation.Models.Catalog;
-using FluentAssertions;
+using Bookstore.Api.Automation.Utils;
 using System.Net;
-using Xunit.Abstractions;
 
 namespace Bookstore.Api.Automation.Tests.Catalog
 {
@@ -31,49 +30,41 @@ namespace Bookstore.Api.Automation.Tests.Catalog
         [Fact(DisplayName = "GET /Books - When books exist, should return book list")]
         public async Task GetAllBooks_WhenBooksExist_ShouldReturnBookList()
         {
-            Console.WriteLine("\n[STEP] Calling GET /Books endpoint");
-
             // Arrange
             string token = _authFixture.Token;
             Assert.False(string.IsNullOrWhiteSpace(token), "The token must be valid for authenticated requests");
 
+            AllureReport.Arrange("Authenticated request", new { Token = "Bearer token" });
+
             // Act
             var response = await _catalogClient.GetAllBooksAsync();
-
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Console.WriteLine("[ASSERT] Expected Status: OK");
-            Console.WriteLine($"[ASSERT] Actual Status: {response.StatusCode}");
 
             // Assert
             Assert.NotNull(response.Data);
             Assert.NotNull(response.Data.Books);
             Assert.NotEmpty(response.Data.Books);
 
-            Console.WriteLine("\n[ASSERT] Expected: Book list not empty");
-            Console.WriteLine($"\n[ASSERT] Actual: Book list returned {response?.Data.Books.Count} books");
+            var assertions = new AllureReport.AssertionBuilder()
+                .Add("StatusCode", HttpStatusCode.OK, response.StatusCode)
+                .Add("Books Count", ">0", response.Data.Books.Count.ToString());
+
+            AllureReport.Assertions(assertions);
         }
 
         [Fact(DisplayName = "GET /Books - When called, should return valid catalog structure")]
         public async Task GetAllBooks_WhenCalled_ShouldReturnValidCatalogStructure()
         {
-            Console.WriteLine("\n---------------------------------------------------");
-            Console.WriteLine("[STEP] Calling GET /Books");
+            AllureReport.Arrange("Catalog structure validation", null);
 
             var response = await _catalogClient.GetAllBooksAsync();
 
-            Console.WriteLine("[ASSERT] Expected Status: OK");
-            Console.WriteLine($"[ASSERT] Actual Status: {response.StatusCode}");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-            Console.WriteLine("[STEP] Validating response object");
             Assert.NotNull(response.Data);
             Assert.NotNull(response.Data.Books);
             Assert.NotEmpty(response.Data.Books);
 
-            Console.WriteLine("\n[STEP] Validating structure of each returned book\n");
-
-            int index = 1;
-
+            // Validate each book structure
+            int validatedBooks = 0;
             foreach (var book in response.Data.Books!)
             {
                 Assert.False(string.IsNullOrWhiteSpace(book.Isbn));
@@ -85,14 +76,16 @@ namespace Bookstore.Api.Automation.Tests.Catalog
                 Assert.False(string.IsNullOrWhiteSpace(book.Website));
                 Assert.True(book.Pages > 0);
                 Assert.True(book.PublishDate != default);
-
-                Console.WriteLine($"[INFO] Book #{index} structure validated successfully.");
-                index++;
+                validatedBooks++;
             }
 
-            Console.WriteLine("[INFO] Catalog structure is valid");
-            Console.WriteLine("---------------------------------------------------");
-        }
+            var assertions = new AllureReport.AssertionBuilder()
+                .Add("StatusCode", HttpStatusCode.OK, response.StatusCode)
+                .Add("Books Not Empty", true, response.Data.Books.Count > 0)
+                .Add("Valid Books Count", ">0", validatedBooks.ToString())
+                .Add("All Fields Present", true, validatedBooks == response.Data.Books.Count);
 
+            AllureReport.Assertions(assertions);
+        }
     }
 }

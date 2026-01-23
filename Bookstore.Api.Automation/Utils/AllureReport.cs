@@ -17,6 +17,23 @@ namespace Bookstore.Api.Automation.Utils
             PropertyNameCaseInsensitive = true
         };
 
+        static AllureReport()
+        {
+            // Initialize Allure lifecycle with proper directory configuration
+            var resultsDirectory = Path.Combine(Directory.GetCurrentDirectory(), "..", "allure-results");
+            resultsDirectory = Path.GetFullPath(resultsDirectory);
+            
+            try
+            {
+                if (!Directory.Exists(resultsDirectory))
+                {
+                    Directory.CreateDirectory(resultsDirectory);
+                }
+                AllureLifecycle.Instance.CleanupResultDirectory();
+            }
+            catch { /* Silently ignore initialization errors */ }
+        }
+
         /// <summary>
         /// Adds an Arrange step with attached data.
         /// </summary>

@@ -2,9 +2,8 @@
 using Bookstore.Api.Automation.Fixtures;
 using Bookstore.Api.Automation.Models.Bookshelf;
 using Bookstore.Api.Automation.Tests.Builders;
-using System;
+using Bookstore.Api.Automation.Utils;
 using System.Net;
-using System.Text;
 using System.Text.Json;
 
 namespace Bookstore.Api.Automation.Tests.Bookshelf
@@ -31,7 +30,6 @@ namespace Bookstore.Api.Automation.Tests.Bookshelf
         public async Task InitializeAsync()
         {
             await _bookshelfClient.DeleteUserBooksAsync(_userId);
-            Console.WriteLine("\n[SETUP] Clearing user's bookshelf before test execution");
         }
 
         public Task DisposeAsync() => Task.CompletedTask;
@@ -39,142 +37,89 @@ namespace Bookstore.Api.Automation.Tests.Bookshelf
         [Fact(DisplayName = "POST /Book - When book is valid, should add book successfully")]
         public async Task AddBook_WhenBookIsValid_ShouldAddBookSuccessfully()
         {
-            Console.WriteLine("\n---------------------------------------------------");
-            // Arrange
             string isbn = "9781449325862";
-
-            Console.WriteLine("\n[STEP] Building request body");
             var requestBody = new AddBookRequestBuilder()
                 .WithUserId(_userId)
                 .WithIsbn(isbn)
                 .Build();
 
-            // Act
-            Console.WriteLine("\n[STEP] Calling POST /Book endpoint");
+            AllureReport.Arrange("Valid book request", requestBody);
+
             var response = await _bookshelfClient.AddBookAsync(requestBody);
 
-            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-            Console.WriteLine($"\n[ASSERT] Expected Status: {HttpStatusCode.Created}");
-            Console.WriteLine($"[ASSERT] Actual Status: {response.StatusCode}");
-
-            Console.WriteLine("\n[STEP] Deserializing response");
             var responseData = JsonSerializer.Deserialize<AddBookResponse>(
                 response.Content!,
-                new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             Assert.NotNull(responseData);
             Assert.NotNull(responseData.Books);
             Assert.NotEmpty(responseData.Books);
-            Console.WriteLine("\n[ASSERT] Checking response object is not null");
 
-            var books = responseData.Books;
-            Assert.Equal(isbn, books.First().Isbn);
+            var assertions = new AllureReport.AssertionBuilder()
+                .Add("StatusCode", HttpStatusCode.Created, response.StatusCode)
+                .Add("ISBN", isbn, responseData.Books.First().Isbn);
 
-            Console.WriteLine($"\n[ASSERT] Checking ISBN in response");
-            Console.WriteLine($"[ASSERT] Expected ISBN: {isbn}");
-            Console.WriteLine($"[ASSERT] Actual ISBN: {responseData.Books.First().Isbn}");
-
-            Console.WriteLine("\n[INFO] Test finished successfully");
-            Console.WriteLine("---------------------------------------------------\n");
+            AllureReport.Assertions(assertions);
         }
 
         [Fact(DisplayName = "POST /Book - When ISBN already exists, should return error")]
         public async Task AddBook_WhenIsbnAlreadyExists_ShouldReturnError()
         {
-            Console.WriteLine("\n---------------------------------------------------");
-
             string isbn = "9781449325862";
-
-            // Arrange
-            Console.WriteLine("[STEP] Building request body for initial insert");
             var requestBody = new AddBookRequestBuilder()
                 .WithUserId(_userId)
                 .WithIsbn(isbn)
                 .Build();
 
-            // Act 1
-            Console.WriteLine("[STEP] Calling POST /Book for first insert");
+            AllureReport.Arrange("Valid book request for duplicate test", requestBody);
+
             var firstResponse = await _bookshelfClient.AddBookAsync(requestBody);
-
             Assert.Equal(HttpStatusCode.Created, firstResponse.StatusCode);
-            Console.WriteLine($"[ASSERT] First insert status: {firstResponse.StatusCode}");
 
-            // Act 2
-            Console.WriteLine("\n[STEP] Calling POST /Book for duplicated insert");
             var duplicatedResponse = await _bookshelfClient.AddBookAsync(requestBody);
 
-            Assert.Equal(HttpStatusCode.BadRequest, duplicatedResponse.StatusCode);
-            Console.WriteLine($"[ASSERT] Expected Status: {HttpStatusCode.BadRequest}");
-            Console.WriteLine($"[ASSERT] Actual Status: {duplicatedResponse.StatusCode}");
-
-            // Deserialize error object
-            Console.WriteLine("[STEP] Deserializing error response");
             var errorData = JsonSerializer.Deserialize<ErrorResponse>(
                 duplicatedResponse.Content!,
-                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
-            );
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             Assert.NotNull(errorData);
-            Console.WriteLine("[ASSERT] Validating error object");
 
-            Assert.Contains("ISBN already present", errorData.Message, StringComparison.OrdinalIgnoreCase);
-            Console.WriteLine($"[ASSERT] API returned message: {errorData!.Message}");
+            var assertions = new AllureReport.AssertionBuilder()
+                .Add("StatusCode", HttpStatusCode.BadRequest, duplicatedResponse.StatusCode)
+                .Add("Error Message", "ISBN already present", errorData.Message);
 
-            Console.WriteLine("[INFO] Duplicated insert test finished");
-            Console.WriteLine("---------------------------------------------------\n");
+            AllureReport.Assertions(assertions);
         }
 
         [Fact(DisplayName = "POST /Book - When ISBN is invalid, should return error")]
         public async Task AddBook_WhenIsbnIsInvalid_ShouldReturnError()
         {
-            Console.WriteLine("\n---------------------------------------------------");
-
             string invalidIsbn = "invalid-isbn";
-
-            // Arrange
-            Console.WriteLine("[STEP] Building request body with invalid ISBN");
             var requestBody = new AddBookRequestBuilder()
                 .WithUserId(_userId)
                 .WithIsbn(invalidIsbn)
                 .Build();
 
-            // Act
-            Console.WriteLine("[STEP] Calling POST /Book with invalid ISBN");
+            AllureReport.Arrange("Invalid ISBN request", requestBody);
+
             var response = await _bookshelfClient.AddBookAsync(requestBody);
 
-
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            Console.WriteLine($"[ASSERT] Expected Status: {HttpStatusCode.BadRequest}");
-            Console.WriteLine($"[ASSERT] Actual Status: {response.StatusCode}");
-
-            // Deserialize error object
-            Console.WriteLine("[STEP] Deserializing error response");
             var errorData = JsonSerializer.Deserialize<ErrorResponse>(
                 response.Content!,
-                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
-            );
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-            
             Assert.NotNull(errorData);
-            Console.WriteLine("[ASSERT] Validating error object");
 
-            Console.WriteLine($"[ASSERT] API error message: {errorData!.Message}");
-            Assert.Contains("ISBN supplied is not available", errorData.Message, StringComparison.OrdinalIgnoreCase);
+            var assertions = new AllureReport.AssertionBuilder()
+                .Add("StatusCode", HttpStatusCode.BadRequest, response.StatusCode)
+                .Add("Error Message", "ISBN supplied is not available", errorData.Message);
 
-            Console.WriteLine("[INFO] Invalid ISBN test finished");
-            Console.WriteLine("---------------------------------------------------\n");
+            AllureReport.Assertions(assertions);
         }
 
         [Fact(DisplayName = "POST /Book - When multiple books are provided, should add all successfully")]
         public async Task AddBook_WhenMultipleBooksProvided_ShouldAddAllSuccessfully()
         {
-            Console.WriteLine("---------------------------------------------------");
-            Console.WriteLine("[STEP] Preparing request body with multiple ISBNs");
-
-            // Arrange
             string isbn1 = "9781449325862";
             string isbn2 = "9781449331818";
 
@@ -183,35 +128,28 @@ namespace Bookstore.Api.Automation.Tests.Bookshelf
                 .WithIsbns(isbn1, isbn2)
                 .Build();
 
-            Console.WriteLine("[STEP] Calling POST /Book endpoint to add multiple books");
+            AllureReport.Arrange("Multiple books request", requestBody);
+
             var response = await _bookshelfClient.AddBookAsync(requestBody);
 
-            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-            Console.WriteLine($"\n[ASSERT] Expected Status: {HttpStatusCode.Created}");
-            Console.WriteLine($"[ASSERT] Actual Status: {response.StatusCode}");
-
-            Console.WriteLine("[STEP] Deserializing response body");
             var responseData = JsonSerializer.Deserialize<AddBookResponse>(
                 response.Content!,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-            Console.WriteLine("[ASSERT] Validating response content");
             Assert.NotNull(responseData);
             Assert.NotNull(responseData.Books);
             Assert.NotEmpty(responseData.Books);
 
             var books = responseData.Books;
-            Assert.True(books.Count == 2, $"Expected 2 books in response instead of {books.Count}");
-
             var isbnsReturned = books.Select(b => b.Isbn).ToList();
-            Assert.Contains(isbn1, isbnsReturned);
-            Assert.Contains(isbn2, isbnsReturned);
 
-            Console.WriteLine($"[ASSERT] Expected ISBNs: {isbn1}, {isbn2}");
-            Console.WriteLine($"[ASSERT] Actual ISBNs returned: {string.Join(", ", isbnsReturned)}");
+            var assertions = new AllureReport.AssertionBuilder()
+                .Add("StatusCode", HttpStatusCode.Created, response.StatusCode)
+                .Add("Books Count", 2, books.Count)
+                .Add("ISBN 1", isbn1, isbnsReturned.Contains(isbn1) ? isbn1 : "NOT FOUND")
+                .Add("ISBN 2", isbn2, isbnsReturned.Contains(isbn2) ? isbn2 : "NOT FOUND");
 
-            Console.WriteLine("[INFO] add multiple books test finished");
-            Console.WriteLine("---------------------------------------------------\n");
+            AllureReport.Assertions(assertions);
         }
     }
 }

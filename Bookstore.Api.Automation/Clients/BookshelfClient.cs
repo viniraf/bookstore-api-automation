@@ -18,7 +18,11 @@ namespace Bookstore.Api.Automation.Clients
             var request = new RestRequest("/Books", Method.Delete);
             request.AddQueryParameter("UserId", userId);
 
-            return await _client.ExecuteAsync(request);
+            var response = await _client.ExecuteAsync(request);
+            
+            AllureReport.AttachApiCall(new { UserId = userId }, response, "DELETE /Books");
+
+            return response;
         }
 
         public async Task<RestResponse> AddBookAsync(AddBookRequest request)
@@ -28,6 +32,8 @@ namespace Bookstore.Api.Automation.Clients
             restRequest.AddJsonBody(request);
 
             RestResponse restResponse = await _client.ExecuteAsync(restRequest);
+
+            AllureReport.AttachApiCall(request, restResponse, "POST /Books");
 
             return restResponse;
         }

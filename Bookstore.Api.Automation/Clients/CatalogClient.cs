@@ -1,9 +1,6 @@
 ﻿using Bookstore.Api.Automation.Models.Catalog;
 using Bookstore.Api.Automation.Utils;
 using RestSharp;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Bookstore.Api.Automation.Clients
 {
@@ -26,6 +23,8 @@ namespace Bookstore.Api.Automation.Clients
 
             RestResponse<BookListResponse> response = await _client.ExecuteAsync<BookListResponse>(request);
 
+            AllureReport.AttachApiCall(null, response, "GET /Books");
+
             return response;
         }
 
@@ -36,9 +35,9 @@ namespace Bookstore.Api.Automation.Clients
 
             RestResponse response = await _client.ExecuteAsync(request);
 
+            AllureReport.AttachApiCall(new { ISBN = isbn }, response, "GET /Book");
+
             return response;
         }
-
     }
-
 }

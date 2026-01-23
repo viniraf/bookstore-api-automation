@@ -1,8 +1,9 @@
 ﻿using Bookstore.Api.Automation.Clients;
 using Bookstore.Api.Automation.Fixtures;
 using Bookstore.Api.Automation.Models.Catalog;
-using System.Text.Json;
+using Bookstore.Api.Automation.Utils;
 using System.Net;
+using System.Text.Json;
 
 namespace Bookstore.Api.Automation.Tests.Catalog
 {
@@ -24,57 +25,47 @@ namespace Bookstore.Api.Automation.Tests.Catalog
         [Fact(DisplayName = "GET /Book?ISBN=valid - When ISBN is valid, should return book")]
         public async Task GetBookByIsbn_WhenIsbnIsValid_ShouldReturnBook()
         {
-            Console.WriteLine("\n\n[STEP] Calling GET /Books?ISBN=9781449325862 endpoint");
             string isbn = "9781449325862";
+
+            AllureReport.Arrange("Valid ISBN request", new { ISBN = isbn });
 
             var response = await _catalogClient.GetBookByIsbnAsync(isbn);
 
-            Console.WriteLine($"\n[ASSERT] Expected Status Code: {HttpStatusCode.OK}");
-            Console.WriteLine($"\n[ASSERT] Actual Status Code: {response.StatusCode}");
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.False(string.IsNullOrEmpty(response.Content));
 
             var book = JsonSerializer.Deserialize<Book>(response.Content);
 
             Assert.NotNull(book);
-            Console.WriteLine($"\n[ASSERT] Expected ISBN from book: {isbn}");
-            Console.WriteLine($"\n[ASSERT] Actual ISBN from book: {book.Isbn}");
-            Assert.Equal(isbn, book.Isbn);
+
+            var assertions = new AllureReport.AssertionBuilder()
+                .Add("StatusCode", HttpStatusCode.OK, response.StatusCode)
+                .Add("ISBN", isbn, book.Isbn);
+
+            AllureReport.Assertions(assertions);
         }
 
         [Fact(DisplayName = "GET /Book?ISBN=invalid - When ISBN is invalid, should return bad request")]
         public async Task GetBookByIsbn_WhenIsbnIsInvalid_ShouldReturnBadRequest()
         {
-            Console.WriteLine("\n\n[STEP] Calling GET /Books?ISBN=invalid endpoint");
             string invalidIsbn = "invalid";
+
+            AllureReport.Arrange("Invalid ISBN request", new { ISBN = invalidIsbn });
+
             var response = await _catalogClient.GetBookByIsbnAsync(invalidIsbn);
 
-            Console.WriteLine($"\n[ASSERT] Expected Status Code: {HttpStatusCode.BadRequest}");
-            Console.WriteLine($"\n[ASSERT] Actual Status Code: {response.StatusCode}");
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-
-            // TODO - Testar
             var error = JsonSerializer.Deserialize<ErrorResponse>(
                 response.Content!,
-                new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                }
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
             );
 
             Assert.NotNull(error);
 
-            Console.WriteLine($"\n[ASSERT] Expected error code: {1205}");
-            Console.WriteLine($"\n[ASSERT] Actual error code: {error.Code}");
-            Assert.Equal("1205", error.Code);
+            var assertions = new AllureReport.AssertionBuilder()
+                .Add("StatusCode", HttpStatusCode.BadRequest, response.StatusCode)
+                .Add("Error Code", "1205", error.Code)
+                .Add("Error Message", "ISBN supplied is not available in Books Collection!", error.Message);
 
-            Console.WriteLine($"\n[ASSERT] Expected error message: ISBN supplied is not available in Books Collection!");
-            Console.WriteLine($"\n[ASSERT] Actual error message: {error.Message}");
-            Assert.Equal("ISBN supplied is not available in Books Collection!", error.Message);
-
+            AllureReport.Assertions(assertions);
         }
-
-
-
     }
 }

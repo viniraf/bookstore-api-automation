@@ -67,7 +67,8 @@ namespace Bookstore.Api.Automation.Utils
                 responseDetails.AppendLine($"Status Description: {response.StatusDescription}");
                 responseDetails.AppendLine($"Content Length: {response.Content?.Length ?? 0}");
 
-                AllureApi.AddAttachment("Response Info", "text/plain", responseDetails.ToString());
+                var infoBytes = Encoding.UTF8.GetBytes(responseDetails.ToString());
+                AllureApi.AddAttachment("Response Info", "text/plain", infoBytes);
 
                 if (!string.IsNullOrEmpty(response.Content))
                 {
@@ -112,7 +113,8 @@ namespace Bookstore.Api.Automation.Utils
         /// </summary>
         private static void AttachText(string name, string content)
         {
-            AllureApi.AddAttachment(name, "text/plain", content);
+            var bytes = Encoding.UTF8.GetBytes(content);
+            AllureApi.AddAttachment(name, "text/plain", bytes);
         }
 
         /// <summary>
@@ -120,7 +122,8 @@ namespace Bookstore.Api.Automation.Utils
         /// </summary>
         private static void AttachJson(string name, string content)
         {
-            AllureApi.AddAttachment(name, "application/json", content);
+            var bytes = Encoding.UTF8.GetBytes(content);
+            AllureApi.AddAttachment(name, "application/json", bytes);
         }
 
         /// <summary>

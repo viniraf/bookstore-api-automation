@@ -1,4 +1,6 @@
-﻿using Bookstore.Api.Automation.Clients;
+﻿using Allure.Net.Commons;
+using Allure.Xunit.Attributes;
+using Bookstore.Api.Automation.Clients;
 using Bookstore.Api.Automation.Fixtures;
 using Bookstore.Api.Automation.Models.Catalog;
 using Bookstore.Api.Automation.Utils;
@@ -8,6 +10,10 @@ using System.Text.Json;
 namespace Bookstore.Api.Automation.Tests.Catalog
 {
     [Collection("Auth collection")]
+    [AllureSuite("Catalog")]
+    [AllureParentSuite("API Automation")]
+    [AllureEpic("Bookstore API")]
+    [AllureFeature("Catalog")]
     public class GetBookByIsbnTest
     {
         private readonly AuthFixture _authFixture;
@@ -23,6 +29,10 @@ namespace Bookstore.Api.Automation.Tests.Catalog
         }
 
         [Fact(DisplayName = "GET /Book?ISBN=valid - When ISBN is valid, should return book")]
+        [AllureStory("Retrieve Book Details")]
+        [AllureSeverity(SeverityLevel.normal)]
+        [AllureOwner("QA Automation")]
+        [AllureTag("API", "Regression", "Catalog")]
         public async Task GetBookByIsbn_WhenIsbnIsValid_ShouldReturnBook()
         {
             string isbn = "9781449325862";
@@ -36,15 +46,21 @@ namespace Bookstore.Api.Automation.Tests.Catalog
             var book = JsonSerializer.Deserialize<Book>(response.Content);
 
             Assert.NotNull(book);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            
 
             var assertions = new AllureReport.AssertionBuilder()
-                .Add("StatusCode", HttpStatusCode.OK, response.StatusCode)
+                .Add("Status Code","200 OK", $"{(int)response.StatusCode} {response.StatusCode}")
                 .Add("ISBN", isbn, book.Isbn);
 
             AllureReport.Assertions(assertions);
         }
 
         [Fact(DisplayName = "GET /Book?ISBN=invalid - When ISBN is invalid, should return bad request")]
+        [AllureStory("Handle Invalid Book Lookup")]
+        [AllureSeverity(SeverityLevel.critical)]
+        [AllureOwner("QA Automation")]
+        [AllureTag("API", "Negative", "Validation")]
         public async Task GetBookByIsbn_WhenIsbnIsInvalid_ShouldReturnBadRequest()
         {
             string invalidIsbn = "invalid";
@@ -59,13 +75,17 @@ namespace Bookstore.Api.Automation.Tests.Catalog
             );
 
             Assert.NotNull(error);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Equal("1205", error.Code);
+            Assert.Equal("ISBN supplied is not available in Books Collection!", error.Message);
 
             var assertions = new AllureReport.AssertionBuilder()
-                .Add("StatusCode", HttpStatusCode.BadRequest, response.StatusCode)
+                .Add("Status Code","400 BadRequest", $"{(int)response.StatusCode} {response.StatusCode}")
                 .Add("Error Code", "1205", error.Code)
-                .Add("Error Message", "ISBN supplied is not available in Books Collection!", error.Message);
+                .Add("Error Message","ISBN supplied is not available in Books Collection!", error.Message);
 
             AllureReport.Assertions(assertions);
+
         }
     }
 }

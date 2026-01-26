@@ -1,4 +1,6 @@
-﻿using Bookstore.Api.Automation.Clients;
+﻿using Allure.Net.Commons;
+using Allure.Xunit.Attributes;
+using Bookstore.Api.Automation.Clients;
 using Bookstore.Api.Automation.Fixtures;
 using Bookstore.Api.Automation.Models.Catalog;
 using Bookstore.Api.Automation.Utils;
@@ -12,6 +14,10 @@ namespace Bookstore.Api.Automation.Tests.Catalog
     /// </summary>
 
     [Collection("Auth collection")]
+    [AllureSuite("Catalog")]
+    [AllureParentSuite("API Automation")]
+    [AllureEpic("Bookstore API")]
+    [AllureFeature("Catalog")]
     public class GetAllBooksTest
     {
         private readonly AuthFixture _authFixture;
@@ -28,30 +34,33 @@ namespace Bookstore.Api.Automation.Tests.Catalog
         }
 
         [Fact(DisplayName = "GET /Books - When books exist, should return book list")]
+        [AllureStory("Retrieve All Books")]
+        [AllureSeverity(SeverityLevel.normal)]
+        [AllureOwner("QA Automation")]
+        [AllureTag("API", "Regression", "Catalog")]
         public async Task GetAllBooks_WhenBooksExist_ShouldReturnBookList()
         {
-            // Arrange
-            string token = _authFixture.Token;
-            Assert.False(string.IsNullOrWhiteSpace(token), "The token must be valid for authenticated requests");
-
-            AllureReport.Arrange("Authenticated request", new { Token = "Bearer token" });
-
             // Act
             var response = await _catalogClient.GetAllBooksAsync();
 
             // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.NotNull(response.Data);
             Assert.NotNull(response.Data.Books);
             Assert.NotEmpty(response.Data.Books);
 
             var assertions = new AllureReport.AssertionBuilder()
-                .Add("StatusCode", HttpStatusCode.OK, response.StatusCode)
-                .Add("Books Count", ">0", response.Data.Books.Count.ToString());
+                .Add("Status Code", "200 OK", $"{(int)response.StatusCode} {response.StatusCode}")
+                .Add("Books Count > 0", true, response.Data.Books.Count > 0);
 
             AllureReport.Assertions(assertions);
         }
 
         [Fact(DisplayName = "GET /Books - When called, should return valid catalog structure")]
+        [AllureStory("Validate Catalog Data Contract")]
+        [AllureSeverity(SeverityLevel.critical)]
+        [AllureOwner("QA Automation")]
+        [AllureTag("API", "Contract", "Schema")]
         public async Task GetAllBooks_WhenCalled_ShouldReturnValidCatalogStructure()
         {
             AllureReport.Arrange("Catalog structure validation", null);
@@ -80,10 +89,11 @@ namespace Bookstore.Api.Automation.Tests.Catalog
             }
 
             var assertions = new AllureReport.AssertionBuilder()
-                .Add("StatusCode", HttpStatusCode.OK, response.StatusCode)
-                .Add("Books Not Empty", true, response.Data.Books.Count > 0)
-                .Add("Valid Books Count", ">0", validatedBooks.ToString())
+                .Add("Status Code","200 OK", $"{(int)response.StatusCode} {response.StatusCode}")
+                .Add("Books Count > 0", true, response.Data.Books.Count > 0)
+                .Add("Validated Books", response.Data.Books.Count, validatedBooks)
                 .Add("All Fields Present", true, validatedBooks == response.Data.Books.Count);
+
 
             AllureReport.Assertions(assertions);
         }

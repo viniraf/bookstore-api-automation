@@ -1,4 +1,6 @@
-﻿using Bookstore.Api.Automation.Clients;
+﻿using Allure.Net.Commons;
+using Allure.Xunit.Attributes;
+using Bookstore.Api.Automation.Clients;
 using Bookstore.Api.Automation.Fixtures;
 using Bookstore.Api.Automation.Models.Bookshelf;
 using Bookstore.Api.Automation.Tests.Builders;
@@ -9,6 +11,10 @@ using System.Text.Json;
 namespace Bookstore.Api.Automation.Tests.Bookshelf
 {
     [Collection("Auth collection")]
+    [AllureSuite("Bookshelf")]
+    [AllureParentSuite("API Automation")]
+    [AllureEpic("Bookstore API")]
+    [AllureFeature("Bookshelf")]
     public class AddBookTests : IAsyncLifetime
     {
         private readonly AuthFixture _authFixture;
@@ -35,6 +41,10 @@ namespace Bookstore.Api.Automation.Tests.Bookshelf
         public Task DisposeAsync() => Task.CompletedTask;
 
         [Fact(DisplayName = "POST /Book - When book is valid, should add book successfully")]
+        [AllureStory("Add Book to User Collection")]
+        [AllureSeverity(SeverityLevel.blocker)]
+        [AllureOwner("QA Automation")]
+        [AllureTag("API", "Regression", "Bookshelf")]
         public async Task AddBook_WhenBookIsValid_ShouldAddBookSuccessfully()
         {
             string isbn = "9781449325862";
@@ -51,18 +61,24 @@ namespace Bookstore.Api.Automation.Tests.Bookshelf
                 response.Content!,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
             Assert.NotNull(responseData);
             Assert.NotNull(responseData.Books);
             Assert.NotEmpty(responseData.Books);
+            Assert.Equal(isbn, responseData.Books.First().Isbn);
 
             var assertions = new AllureReport.AssertionBuilder()
-                .Add("StatusCode", HttpStatusCode.Created, response.StatusCode)
+                .Add("Status Code", "201 Created", $"{(int)response.StatusCode} {response.StatusCode}")
                 .Add("ISBN", isbn, responseData.Books.First().Isbn);
 
             AllureReport.Assertions(assertions);
         }
 
         [Fact(DisplayName = "POST /Book - When ISBN already exists, should return error")]
+        [AllureStory("Prevent Duplicate Book")]
+        [AllureSeverity(SeverityLevel.critical)]
+        [AllureOwner("QA Automation")]
+        [AllureTag("API", "Negative", "Validation")]
         public async Task AddBook_WhenIsbnAlreadyExists_ShouldReturnError()
         {
             string isbn = "9781449325862";
@@ -82,16 +98,22 @@ namespace Bookstore.Api.Automation.Tests.Bookshelf
                 duplicatedResponse.Content!,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
+            Assert.Equal(HttpStatusCode.BadRequest, duplicatedResponse.StatusCode);
             Assert.NotNull(errorData);
+            Assert.Equal("ISBN already present in the User's Collection!", errorData.Message);
 
             var assertions = new AllureReport.AssertionBuilder()
-                .Add("StatusCode", HttpStatusCode.BadRequest, duplicatedResponse.StatusCode)
-                .Add("Error Message", "ISBN already present", errorData.Message);
+                .Add("Status Code","400 BadRequest", $"{(int)duplicatedResponse.StatusCode} {duplicatedResponse.StatusCode}")
+                .Add("Error Message", "ISBN already present in the User's Collection!", errorData.Message);
 
             AllureReport.Assertions(assertions);
         }
 
         [Fact(DisplayName = "POST /Book - When ISBN is invalid, should return error")]
+        [AllureStory("Validate ISBN Before Adding Book")]
+        [AllureSeverity(SeverityLevel.critical)]
+        [AllureOwner("QA Automation")]
+        [AllureTag("API", "Negative", "Validation")]
         public async Task AddBook_WhenIsbnIsInvalid_ShouldReturnError()
         {
             string invalidIsbn = "invalid-isbn";
@@ -108,16 +130,22 @@ namespace Bookstore.Api.Automation.Tests.Bookshelf
                 response.Content!,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.NotNull(errorData);
+            Assert.Equal("ISBN supplied is not available in Books Collection!", errorData.Message);
 
             var assertions = new AllureReport.AssertionBuilder()
-                .Add("StatusCode", HttpStatusCode.BadRequest, response.StatusCode)
-                .Add("Error Message", "ISBN supplied is not available", errorData.Message);
+                .Add("Status Code","400 BadRequest", $"{(int)response.StatusCode} {response.StatusCode}")
+                .Add("Error Message", "ISBN supplied is not available in Books Collection!", errorData.Message);
 
             AllureReport.Assertions(assertions);
         }
 
         [Fact(DisplayName = "POST /Book - When multiple books are provided, should add all successfully")]
+        [AllureStory("Add Multiple Books to Collection")]
+        [AllureSeverity(SeverityLevel.critical)]
+        [AllureOwner("QA Team")]
+        [AllureTag("API", "Regression", "Positive", "BusinessRule")]
         public async Task AddBook_WhenMultipleBooksProvided_ShouldAddAllSuccessfully()
         {
             string isbn1 = "9781449325862";
@@ -136,6 +164,7 @@ namespace Bookstore.Api.Automation.Tests.Bookshelf
                 response.Content!,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
             Assert.NotNull(responseData);
             Assert.NotNull(responseData.Books);
             Assert.NotEmpty(responseData.Books);
@@ -144,7 +173,7 @@ namespace Bookstore.Api.Automation.Tests.Bookshelf
             var isbnsReturned = books.Select(b => b.Isbn).ToList();
 
             var assertions = new AllureReport.AssertionBuilder()
-                .Add("StatusCode", HttpStatusCode.Created, response.StatusCode)
+                .Add("Status Code","201 Created",$"{(int)response.StatusCode} {response.StatusCode}")
                 .Add("Books Count", 2, books.Count)
                 .Add("ISBN 1", isbn1, isbnsReturned.Contains(isbn1) ? isbn1 : "NOT FOUND")
                 .Add("ISBN 2", isbn2, isbnsReturned.Contains(isbn2) ? isbn2 : "NOT FOUND");

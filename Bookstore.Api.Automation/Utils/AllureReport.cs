@@ -1,4 +1,4 @@
-using RestSharp;
+﻿using RestSharp;
 using System.Text;
 using System.Text.Json;
 using Allure.Net.Commons;
@@ -163,21 +163,23 @@ namespace Bookstore.Api.Automation.Utils
                     return "No assertions recorded";
 
                 var sb = new StringBuilder();
-                sb.AppendLine("ASSERTIONS SUMMARY");
-                sb.AppendLine("========================================");
+                sb.AppendLine("ASSERTIONS");
+                sb.AppendLine("────────────────────────────────");
 
                 foreach (var (field, expected, actual) in _assertions)
                 {
-                    sb.AppendLine();
-                    sb.AppendLine($"Field: {field}");
-                    sb.AppendLine($"Expected: {expected}");
-                    sb.AppendLine($"Actual: {actual}");
-                    sb.AppendLine($"Status: {(expected == actual ? "? PASS" : "? FAIL")}");
-                    sb.AppendLine("----------------------------------------");
+                    var passed = expected == actual;
+                    var icon = passed ? "✔" : "✖";
+
+                    sb.AppendLine(
+                        $"{icon} {field,-18} → Expected: {expected} | Actual: {actual}"
+                    );
                 }
 
                 return sb.ToString();
             }
+
+
         }
     }
 }

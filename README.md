@@ -155,45 +155,72 @@ dotnet test --filter "FullyQualifiedName~GetAllBooksTests"
 ```bash
 dotnet test --filter "FullyQualifiedName~GetBookByIsbnTests"
 ```
-## 🧪 Logs de Execução
 
-Os testes utilizam **logs padronizados no console** para facilitar a leitura, entendimento do fluxo e análise de falhas.
+## 📊 Relatórios com Allure
 
-### Padrão de Logs
+O projeto utiliza **Allure Report** para geração de relatórios detalhados de execução dos testes, incluindo:
 
-- `[SETUP]` → Preparação do estado do teste
-- `[STEP]` → Ação executada
-- `[ASSERT]` → Validações realizadas
-- `[INFO]` → Informações adicionais
-
-### Exemplo de Saída no Console
-
-```text
-[SETUP] Clearing user's bookshelf before test execution
----------------------------------------------------
-[STEP] Building request body
-[STEP] Calling POST /Book endpoint
-[ASSERT] Expected Status: Created
-[ASSERT] Actual Status: Created
-[STEP] Deserializing response
-[ASSERT] Checking response object is not null
-[ASSERT] Checking ISBN in response
-[ASSERT] Expected ISBN: 9781449325862
-[ASSERT] Actual ISBN: 9781449325862
-[INFO] Test finished successfully
----------------------------------------------------
-```
-## 🚀 Próximos Passos
-
-Possíveis melhorias e evoluções futuras:
-
-- Integração com **Allure Report** para geração de relatórios avançados
-- Execução automática dos testes em pipelines de **CI/CD**
-- Introdução de uma camada de **Service** para melhor separação de responsabilidades
-- Expansão das validações de contrato da API
-- Separação entre testes funcionais e testes de contrato
+- Requisições e respostas da API  
+- Steps organizados por fluxo de negócio  
+- Classificação por severidade, tipo de teste e regra de negócio  
+- Visões **Suites (estrutura)** e **Behaviors (funcional)**  
 
 ---
+
+### 🛠️ Instalar Allure (caso não tenha)
+
+**Windows (via Scoop):**
+
+```bash
+scoop install allure
+```
+
+**Mac:**
+
+```bash
+brew install allure
+```
+
+---
+
+### ▶️ Gerar relatório após execução
+
+1️⃣ Execute os testes:
+
+```bash
+dotnet test
+```
+
+2️⃣ Gerar relatório:
+
+```bash
+allure generate allure-results --clean -o allure-report
+```
+
+3️⃣ Abrir relatório:
+
+```bash
+allure open allure-report
+```
+
+---
+
+### 📁 Estrutura de geração
+
+| Pasta | Descrição |
+|-------|-----------|
+| `allure-results/` | Dados brutos gerados pelos testes |
+| `allure-report/` | Relatório HTML gerado |
+| Ambas são ignoradas no Git | ✔ |
+
+---
+
+### 💡 Benefícios do Allure
+
+- Visualização profissional dos testes  
+- Organização por módulo e regra de negócio  
+- Evidências de requisição/resposta  
+- Ideal para análise por QA Leads e stakeholders  
 
 ## 👤 Autor
 

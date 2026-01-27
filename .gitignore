@@ -413,5 +413,10 @@ obj/
 # Others
 *.DS_Store
 
+# Allure Report
+allure-results/
+allure-report/
+*.trx
+TestResults/
 
 # End of https://www.toptal.com/developers/gitignore/api/csharp
